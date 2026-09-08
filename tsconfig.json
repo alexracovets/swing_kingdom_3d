@@ -1,0 +1,59 @@
+{
+  "compilerOptions": {
+    "target": "ES2017",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "react-jsx",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@/*": ["./src/*"],
+
+      "@configurator": ["./src/configurator"],
+      "@configurator/*": ["./src/configurator/*"],
+      "@brain": ["./src/configurator/brain"],
+      "@brain/*": ["./src/configurator/brain/*"],
+      "@eyes": ["./src/configurator/eyes"],
+      "@eyes/*": ["./src/configurator/eyes/*"],
+
+      "@ui": ["./src/ui/components/atomic"],
+      "@atoms": ["./src/ui/components/atomic/atoms"],
+      "@molecules": ["./src/ui/components/atomic/molecules"],
+      "@organisms": ["./src/ui/components/atomic/organisms"],
+      "@templates": ["./src/ui/components/atomic/templates"],
+      "@shared": ["./src/ui/components/shared"],
+      "@styles": ["./src/ui/styles/globals.css"],
+      "@styles/*": ["./src/ui/styles/*"],
+
+      "@store": ["./src/store"],
+      "@store/*": ["./src/store/*"],
+      "@hooks": ["./src/hooks"],
+      "@hooks/*": ["./src/hooks/*"],
+      "@lib": ["./src/lib"],
+      "@lib/*": ["./src/lib/*"],
+      "@types": ["./src/types"],
+      "@types/*": ["./src/types/*"]
+    }
+  },
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts",
+    "**/*.mts"
+  ],
+  "exclude": ["node_modules"]
+}

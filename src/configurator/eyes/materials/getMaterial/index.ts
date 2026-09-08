@@ -1,0 +1,1 @@
+export { getMaterial } from "./getMaterial";

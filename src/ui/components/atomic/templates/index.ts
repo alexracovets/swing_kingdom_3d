@@ -1,0 +1,1 @@
+export { ConfiguratorTemplate } from "./ConfiguratorTemplate";
