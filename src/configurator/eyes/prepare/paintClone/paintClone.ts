@@ -1,6 +1,15 @@
-import { Box3, type Group, Mesh, MeshStandardMaterial, type Object3D, Vector3 } from "three";
+import {
+  Box3,
+  DoubleSide,
+  type Group,
+  type Material,
+  Mesh,
+  MeshStandardMaterial,
+  type Object3D,
+  Vector3,
+} from "three";
 import type { ResolvedMaterial } from "@brain";
-import { getMaterial } from "../../../materials";
+import { getMaterial } from "../../materials";
 
 export interface ModelBounds {
   offset: [number, number, number];
@@ -27,6 +36,18 @@ export function getModelBounds(url: string, scene: Object3D): ModelBounds {
   return bounds;
 }
 
+const doubleSided = new WeakMap<Material, Material>();
+
+function toDoubleSide(mat: Material): Material {
+  if (mat.side === DoubleSide) return mat;
+  const cached = doubleSided.get(mat);
+  if (cached) return cached;
+  const clone = mat.clone();
+  clone.side = DoubleSide;
+  doubleSided.set(mat, clone);
+  return clone;
+}
+
 export function paintClone(source: Object3D, materials: ResolvedMaterial[]): Group {
   const root = source.clone(true) as Group;
   const bySlot = new Map(materials.map((m) => [m.slot, m]));
@@ -36,9 +57,10 @@ export function paintClone(source: Object3D, materials: ResolvedMaterial[]): Gro
     obj.castShadow = true;
     obj.receiveShadow = true;
 
-    const swap = (mat: MeshStandardMaterial) => {
+    const swap = (mat: MeshStandardMaterial): Material => {
       const resolved = bySlot.get(mat.name);
-      return resolved ? getMaterial(resolved) : mat;
+      if (resolved) return getMaterial(resolved);
+      return toDoubleSide(mat);
     };
 
     obj.material = Array.isArray(obj.material)

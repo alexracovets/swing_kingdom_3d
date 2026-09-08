@@ -13,6 +13,10 @@ export const BUILDING_PART: CatalogPart = {
   status: "ready",
   notes:
     "Primary model. Deck-height variants (3' / 7') are Y-stretch transforms of this 5' base, not separate GLBs.",
+  sockets: [
+    { id: "left", size: "4x4", emptyNode: "Plane_Left" },
+    { id: "right", size: "4x4", emptyNode: "Plane_Right" },
+  ],
   materials: [
     { name: "Frame", role: "vinyl", texture: "woodgrain" },
     { name: "Board", role: "accent" },

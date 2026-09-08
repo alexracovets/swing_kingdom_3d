@@ -66,6 +66,15 @@ function parseInstance(v: unknown): PartInstance | null {
     if (Object.keys(clean).length > 0) inst.overrides = clean;
   }
 
+  if (i.sockets && typeof i.sockets === "object") {
+    const src = i.sockets as Record<string, unknown>;
+    const clean: Record<string, string> = {};
+    for (const [k, val] of Object.entries(src)) {
+      if (typeof val === "string" && getPart(val)) clean[k] = val;
+    }
+    if (Object.keys(clean).length > 0) inst.sockets = clean;
+  }
+
   return inst;
 }
 

@@ -1,4 +1,4 @@
-import { Color, MeshStandardMaterial } from "three";
+import { Color, DoubleSide, MeshStandardMaterial } from "three";
 import type { ResolvedMaterial } from "@brain";
 import {
   MATERIAL_METALNESS,
@@ -20,6 +20,7 @@ export function getMaterial(resolved: ResolvedMaterial): MeshStandardMaterial {
       color: new Color(resolved.color),
       roughness: MATERIAL_ROUGHNESS,
       metalness: MATERIAL_METALNESS,
+      side: DoubleSide,
       polygonOffset: pushBack,
       polygonOffsetFactor: pushBack ? POLYGON_OFFSET_FACTOR : 0,
       polygonOffsetUnits: pushBack ? POLYGON_OFFSET_UNITS : 0,

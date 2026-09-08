@@ -13,9 +13,15 @@ import {
 
 const HISTORY_LIMIT = 50;
 
+export interface EditingSocket {
+  uid: string;
+  socketId: string;
+}
+
 export interface ConfiguratorState {
   config: PlaygroundConfig;
   selectedUid: string | null;
+  editingSocket: EditingSocket | null;
   past: PlaygroundConfig[];
   future: PlaygroundConfig[];
 
@@ -26,6 +32,8 @@ export interface ConfiguratorState {
   moveInstance: (uid: string, position: Vec3) => void;
   rotateInstance: (uid: string, rotationY: number) => void;
   setOverride: (uid: string, slot: string, color: string) => void;
+  setSocketPart: (uid: string, socketId: string, partId: string) => void;
+  editSocket: (target: EditingSocket | null) => void;
   select: (uid: string | null) => void;
   undo: () => void;
   redo: () => void;
@@ -45,6 +53,7 @@ function commit(
 export const useConfigurator = create<ConfiguratorState>((set) => ({
   config: createDefaultConfig(),
   selectedUid: null,
+  editingSocket: null,
   past: [],
   future: [],
 
@@ -127,7 +136,25 @@ export const useConfigurator = create<ConfiguratorState>((set) => ({
       }),
     ),
 
-  select: (uid) => set({ selectedUid: uid }),
+  setSocketPart: (uid, socketId, partId) =>
+    set((s) =>
+      commit(
+        s,
+        {
+          ...s.config,
+          instances: s.config.instances.map((i) =>
+            i.uid === uid
+              ? { ...i, sockets: { ...i.sockets, [socketId]: partId } }
+              : i,
+          ),
+        },
+        { editingSocket: null },
+      ),
+    ),
+
+  editSocket: (target) => set({ editingSocket: target }),
+
+  select: (uid) => set({ selectedUid: uid, editingSocket: null }),
 
   undo: () =>
     set((s) => {
@@ -138,6 +165,7 @@ export const useConfigurator = create<ConfiguratorState>((set) => ({
         past: s.past.slice(0, -1),
         future: [s.config, ...s.future].slice(0, HISTORY_LIMIT),
         selectedUid: null,
+        editingSocket: null,
       };
     }),
 
@@ -150,6 +178,7 @@ export const useConfigurator = create<ConfiguratorState>((set) => ({
         past: [...s.past, s.config].slice(-HISTORY_LIMIT),
         future: s.future.slice(1),
         selectedUid: null,
+        editingSocket: null,
       };
     }),
 
@@ -157,12 +186,19 @@ export const useConfigurator = create<ConfiguratorState>((set) => ({
     set({
       config: createDefaultConfig(),
       selectedUid: null,
+      editingSocket: null,
       past: [],
       future: [],
     }),
 
   load: (config) =>
-    set({ config, selectedUid: null, past: [], future: [] }),
+    set({
+      config,
+      selectedUid: null,
+      editingSocket: null,
+      past: [],
+      future: [],
+    }),
 }));
 
 export const getConfiguratorSnapshot = () => useConfigurator.getState();
@@ -181,3 +217,5 @@ export const selectSelectedInstanceScheme = (
 export const selectCanUndo = (s: ConfiguratorState) => s.past.length > 0;
 
 export const selectCanRedo = (s: ConfiguratorState) => s.future.length > 0;
+
+export const selectEditingSocket = (s: ConfiguratorState) => s.editingSocket;

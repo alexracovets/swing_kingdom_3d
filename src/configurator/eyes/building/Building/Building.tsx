@@ -5,6 +5,7 @@ import { useGLTF } from "@react-three/drei";
 import type { ThreeEvent } from "@react-three/fiber";
 import type { RenderableInstance } from "@brain";
 import { useConfigurator } from "@store";
+import { InstanceSockets } from "../../sockets";
 import { usePreparedModel } from "../usePreparedModel";
 import { SelectionBox } from "../SelectionBox";
 
@@ -40,7 +41,10 @@ export function Building({ instance }: BuildingProps) {
       scale={scale}
       onClick={onClick}
     >
-      <primitive object={model} position={bounds.offset} />
+      <group position={bounds.offset}>
+        <primitive object={model} />
+        <InstanceSockets instance={instance} glbUrl={url} selected={selected} />
+      </group>
       {selected && <SelectionBox size={bounds.size} />}
     </group>
   );

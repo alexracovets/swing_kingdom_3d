@@ -29,8 +29,11 @@ src/
 │   │   │   └── defaults/             DEFAULT_SCHEME, createDefaultConfig,
 │   │   │                             makeInstance, nextUid
 │   │   ├── catalog/
-│   │   │   ├── building/             головна модель Super 59 + похідні висоти deck
-│   │   │   └── registry/             індекс частин, resolveRenderable()
+│   │   │   ├── building/             головна модель Super 59 + похідні висоти deck;
+│   │   │   │                         оголошує sockets[] (id + size + emptyNode GLB)
+│   │   │   ├── socketParts/          частини, що вставляються в сокет (socketFit),
+│   │   │   │                         + DEFAULT_SOCKET_PART по розміру
+│   │   │   └── registry/             індекс, resolveRenderable(), partsForSocket()
 │   │   ├── materials/resolveColor/   логіка Colors/Materials (main → Vinyl,
 │   │   │                             accent → дошки/пікети, tertiary → Coastal
 │   │   │                             Gray Poly, native → залишити матеріал GLB →
@@ -38,10 +41,11 @@ src/
 │   │   ├── scene/resolveScene/       resolveScene(config) → плаский
 │   │   │                             RenderableInstance[]: похідні згорнуті на базу
 │   │   │                             + scale, кольори вирішені, per-instance схема
-│   │   │                             змерджена над глобальною. resolveInstance()
-│   │   │                             мемоізується по ключу входів (кеш чиститься
-│   │   │                             від мертвих). nextInstancePosition() —
-│   │   │                             автопозиція нового інстансу
+│   │   │                             змерджена над глобальною, sockets вирішені
+│   │   │                             в ResolvedSocket[] (part + materials).
+│   │   │                             resolveInstance() мемоізується по ключу входів
+│   │   │                             (кеш чиститься від мертвих).
+│   │   │                             nextInstancePosition() — автопозиція
 │   │   ├── serialization/config/     config ⇄ рядок для share-посилання; повна
 │   │   │                             валідація форми (Vec3, hex, unknown partId)
 │   │   ├── constants/                один index.ts: FT_TO_UNIT, INSTANCE_SPACING_UNITS…
@@ -57,14 +61,28 @@ src/
 │   │   │   ├── SceneLights/              ambient + directional (VSM shadows) + env
 │   │   │   └── SceneFloor/               <Grid> + shadow-catcher plane
 │   │   ├── building/
-│   │   │   ├── Building/                 головна модель — чистий JSX
+│   │   │   ├── Building/                 головна модель — чистий JSX + <InstanceSockets>
 │   │   │   ├── usePreparedModel/         useGLTF → deep-clone + підміна матеріалів
-│   │   │   │   └── prepareModel/         paintClone, getModelBounds (bbox-кеш по URL)
 │   │   │   └── SelectionBox/             wireframe-габарит обраного
+│   │   ├── sockets/
+│   │   │   ├── readSocketAnchors/        читає world-transform emptyNode з GLB
+│   │   │   │                             (кеш по URL+defs) → SocketAnchor[]
+│   │   │   ├── InstanceSockets/          зв'язує anchors + mounts + gizmos інстансу
+│   │   │   ├── SocketMount/              рендерить обрану частину сокета
+│   │   │   │   └── useSocketPartObject/  useGLTF → named mesh → paintClone;
+│   │   │   │                             <primitive key={partId}> для remount
+│   │   │   ├── SocketGizmo/              клікабельна сфера; клік → editSocket();
+│   │   │   │                             коли active — <Html> з <SocketPicker>;
+│   │   │   │                             підключення до store тут, дані вниз props
+│   │   │   └── SocketPicker/             presentational (props-driven): title,
+│   │   │                                 options, activeId, onPick, onClose
+│   │   ├── prepare/paintClone/           paintClone, getModelBounds (bbox-кеш);
+│   │   │                                 нейтральний спільний util (building + sockets)
 │   │   ├── materials/getMaterial/        ResolvedMaterial → кешований
 │   │   │                                 THREE.MeshStandardMaterial (+ dispose);
 │   │   │                                 polygonOffset для main/accent проти z-fight
-│   │   ├── constants/                    один index.ts: камера, туман, сітка, тіні
+│   │   ├── constants/                    один index.ts: камера, туман, сітка, тіні,
+│   │   │                                 socket-gizmo
 │   │   └── index.ts
 │   │
 │   └── index.ts                   публічна поверхня конфігуратора
@@ -82,8 +100,9 @@ src/
 │
 ├── store/
 │   ├── useConfigurator/          Zustand-стор. Джерело правди — config.
-│   │                             Історія (past/future, undo/redo). Селектори
-│   │                             повертають примітиви / стабільні посилання.
+│   │                             Історія (past/future, undo/redo), selectedUid,
+│   │                             editingSocket (який сокет зараз редагується).
+│   │                             Селектори повертають примітиви / стабільні посилання.
 │   └── useResolvedScene/         хук: useMemo(resolveScene(config)) — ліниве
 │                                 деривування, не жадібне в set()
 │
@@ -190,16 +209,42 @@ eyes/  ─▶ store/ ─▶ configurator/brain/
 
 ---
 
+## Сокети (варіативні секції)
+
+Частина базової моделі має **сокети** — іменовані точки кріплення, у які
+вставляється (не накладається — **заміна**) інша модель.
+
+- **`CatalogPart.sockets[]`** — оголошення на базовій частині: `id`, `size`
+  (`"4x4"`), `emptyNode` (ім'я empty-ноди в GLB, напр. `Plane_Left`).
+- **socket-parts** (`catalog/socketParts/`) — частини з `socketFit: "4x4"`, які
+  туди підходять. Тестовий набір: `Railing_Slats_4_4` (default), `5_Staircase`,
+  `12_Ramp_with_Rope` — усі в одному `Empty_4_4.glb`, обирається по `glbMesh`.
+- **`PartInstance.sockets`** — `Record<socketId, socketPartId>`. `makeInstance`
+  сідить default'и через `defaultSocketMap`.
+- **`resolveScene`** → `RenderableInstance.sockets: ResolvedSocket[]`
+  (`def` + `part` + `materials`).
+- **`eyes/sockets`**: `readSocketAnchors` дістає transform empty-ноди з GLB;
+  `SocketMount` рендерить обрану частину на anchor через
+  `<primitive key={partId}>` (примусовий remount при свапі); `SocketGizmo` —
+  сфера, тримає підключення до store, у `<Html>` кладе presentational
+  `SocketPicker` з props.
+- **DoubleSide**: `getMaterial` і `paintClone` виставляють `side: DoubleSide`
+  всім матеріалам (тонкі GLB-поверхні: слати, деки, гірки).
+- Сокет-заміна проходить через `commit()` → в історію.
+
+---
+
 ## Наступні кроки
 
 1. `catalog/*.ts` по категорії (towers, slides, climbers…) у міру оптимізації
    моделей; кожен пушить у `registry.ts`.
-2. Snap/socket-система в `brain/scene` для частин, що кріпляться до Building
-   (слайди, місточки, доступ).
-3. `hooks/useUrlConfigSync` — персист конфігу в URL через `brain/serialization`.
-4. Окремий слайс `useSelection` (вибір + hover + camera-focus), відділити від
-   `useConfigurator`.
-5. Commercial-правила (`config.line` наразі inert): вищі перила при deck > 3ft,
+2. Розширити сокети: більше розмірів, правила сумісності (який socketFit у який
+   size), парні сокети (`Salmon Ladder` + `V-Climber` на NOC Climber).
+3. Матеріали для `Empty_4_4` мешів (зараз geometry-only → сірі).
+4. `hooks/useUrlConfigSync` — персист конфігу в URL через `brain/serialization`.
+5. Окремий слайс `useSelection` (вибір + hover + camera-focus + editingSocket),
+   відділити від `useConfigurator`.
+6. Commercial-правила (`config.line` наразі inert): вищі перила при deck > 3ft,
    зазор deck → дах, standalone-only swing frames, авто Safety Signs / Ground
    Anchors. Повернути перемикач Product Line у панель, коли перше правило
    почне споживати значення.

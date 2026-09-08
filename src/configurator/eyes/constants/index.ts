@@ -32,6 +32,11 @@ export const SHADOW_BIAS = -0.0005;
 export const SELECTION_COLOR = "#26c6da";
 export const SELECTION_PADDING = 1.04;
 
+export const SOCKET_GIZMO_RADIUS = 0.12;
+export const SOCKET_GIZMO_COLOR = "#f5a623";
+export const SOCKET_GIZMO_COLOR_ACTIVE = "#26c6da";
+export const SOCKET_GIZMO_HOVER_SCALE = 1.35;
+
 export const MATERIAL_ROUGHNESS = 0.72;
 export const MATERIAL_METALNESS = 0.05;
 

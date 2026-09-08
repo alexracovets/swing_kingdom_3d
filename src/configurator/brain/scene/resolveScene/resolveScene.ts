@@ -3,11 +3,19 @@ import type {
   ColorScheme,
   PartInstance,
   PlaygroundConfig,
+  SocketDef,
   Vec3,
 } from "../../model/types";
-import { requirePart, resolveRenderable } from "../../catalog/registry";
+import { getPart, requirePart, resolveRenderable } from "../../catalog/registry";
 import { resolvePartMaterials, type ResolvedMaterial } from "../../materials/resolveColor";
 import { DECK_AXIS_Y, FT_TO_UNIT } from "../../constants";
+
+export interface ResolvedSocket {
+  def: SocketDef;
+  partId: string | null;
+  part: CatalogPart | null;
+  materials: ResolvedMaterial[];
+}
 
 export interface RenderableInstance {
   uid: string;
@@ -19,6 +27,7 @@ export interface RenderableInstance {
   parentUid?: string;
   socket?: string;
   materials: ResolvedMaterial[];
+  sockets: ResolvedSocket[];
 }
 
 export interface ResolvedScene {
@@ -45,6 +54,24 @@ function effectiveScheme(base: ColorScheme, own?: Partial<ColorScheme>): ColorSc
   return { ...base, ...own };
 }
 
+function resolveSockets(
+  part: CatalogPart,
+  chosen: PartInstance["sockets"],
+  scheme: ColorScheme,
+): ResolvedSocket[] {
+  if (!part.sockets?.length) return [];
+  return part.sockets.map((def) => {
+    const partId = chosen?.[def.id] ?? null;
+    const socketPart = partId ? getPart(partId) ?? null : null;
+    return {
+      def,
+      partId,
+      part: socketPart,
+      materials: socketPart ? resolvePartMaterials(socketPart, scheme) : [],
+    };
+  });
+}
+
 function instanceCacheKey(inst: PartInstance, scheme: ColorScheme): string {
   return [
     inst.uid,
@@ -57,6 +84,7 @@ function instanceCacheKey(inst: PartInstance, scheme: ColorScheme): string {
     scheme.accent,
     scheme.tertiary ?? "",
     inst.overrides ? JSON.stringify(inst.overrides) : "",
+    inst.sockets ? JSON.stringify(inst.sockets) : "",
   ].join("|");
 }
 
@@ -85,6 +113,7 @@ export function resolveInstance(
     parentUid: inst.parentUid,
     socket: inst.socket,
     materials: resolvePartMaterials(part, scheme, { overrides: inst.overrides }),
+    sockets: resolveSockets(part, inst.sockets, scheme),
   };
 
   instanceCache.set(key, resolved);

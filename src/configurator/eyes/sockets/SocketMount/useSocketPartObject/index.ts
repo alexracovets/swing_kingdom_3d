@@ -1,0 +1,1 @@
+export { useSocketPartObject } from "./useSocketPartObject";

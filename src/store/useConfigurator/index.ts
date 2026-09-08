@@ -5,4 +5,6 @@ export { selectDefaultScheme } from "./useConfigurator";
 export { selectSelectedInstanceScheme } from "./useConfigurator";
 export { selectCanUndo } from "./useConfigurator";
 export { selectCanRedo } from "./useConfigurator";
+export { selectEditingSocket } from "./useConfigurator";
 export type { ConfiguratorState } from "./useConfigurator";
+export type { EditingSocket } from "./useConfigurator";

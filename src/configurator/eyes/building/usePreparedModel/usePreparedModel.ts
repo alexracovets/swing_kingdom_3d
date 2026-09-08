@@ -4,10 +4,10 @@ import { useMemo } from "react";
 import { useGLTF } from "@react-three/drei";
 import type { Group } from "three";
 import type { ResolvedMaterial } from "@brain";
-import { getModelBounds } from "./prepareModel";
-import { materialsKey } from "./prepareModel";
-import { paintClone } from "./prepareModel";
-import type { ModelBounds } from "./prepareModel";
+import { getModelBounds } from "../../prepare";
+import { materialsKey } from "../../prepare";
+import { paintClone } from "../../prepare";
+import type { ModelBounds } from "../../prepare";
 
 export interface PreparedModel {
   model: Group;

@@ -49,14 +49,25 @@ export interface DerivedTransform {
   note?: string;
 }
 
+export type SocketSize = "4x4";
+
+export interface SocketDef {
+  id: string;
+  size: SocketSize;
+  emptyNode: string;
+}
+
 export interface CatalogPart {
   id: string;
   label: string;
   category: PartCategory;
   subcategory?: string;
   glb?: string;
+  glbMesh?: string;
   derivedFrom?: DerivedTransform;
   attachTo?: { host: string; socket: string };
+  sockets?: SocketDef[];
+  socketFit?: SocketSize;
   materials: MaterialSlot[];
   commercial: boolean;
   deckHeightFt?: Feet;
@@ -73,6 +84,7 @@ export interface PartInstance {
   socket?: string;
   scheme?: Partial<ColorScheme>;
   overrides?: Record<string, string>;
+  sockets?: Record<string, string>;
 }
 
 export interface PlaygroundConfig {

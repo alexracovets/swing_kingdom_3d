@@ -1,7 +1,12 @@
-import type { CatalogPart, PartCategory } from "../../model/types";
+import type { CatalogPart, PartCategory, SocketSize } from "../../model/types";
 import { BUILDING_PART, BUILDING_VARIANTS } from "../building";
+import { SOCKET_PARTS_4X4 } from "../socketParts";
 
-const ALL_PARTS: CatalogPart[] = [BUILDING_PART, ...BUILDING_VARIANTS];
+const ALL_PARTS: CatalogPart[] = [
+  BUILDING_PART,
+  ...BUILDING_VARIANTS,
+  ...SOCKET_PARTS_4X4,
+];
 
 const BY_ID = new Map(ALL_PARTS.map((p) => [p.id, p]));
 
@@ -21,6 +26,10 @@ export function requirePart(id: string): CatalogPart {
 
 export function partsByCategory(category: PartCategory): CatalogPart[] {
   return ALL_PARTS.filter((p) => p.category === category);
+}
+
+export function partsForSocket(size: SocketSize): CatalogPart[] {
+  return ALL_PARTS.filter((p) => p.socketFit === size);
 }
 
 export function resolveRenderable(id: string): {

@@ -6,6 +6,8 @@ export type { ColorScheme } from "./types";
 export type { ColorRole } from "./types";
 export type { MaterialSlot } from "./types";
 export type { DerivedTransform } from "./types";
+export type { SocketSize } from "./types";
+export type { SocketDef } from "./types";
 export type { CatalogPart } from "./types";
 export type { PartInstance } from "./types";
 export type { PlaygroundConfig } from "./types";

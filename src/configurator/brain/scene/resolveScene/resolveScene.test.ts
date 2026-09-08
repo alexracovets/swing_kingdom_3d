@@ -73,6 +73,33 @@ describe("resolveScene", () => {
     expect(after).not.toBe(before);
     expect(after.materials.find((m) => m.slot === "Board")?.color).toBe("#123456");
   });
+
+  it("seeds the Building with its default socket parts and resolves them", () => {
+    __resetUidCounter();
+    const [building] = resolveScene(createDefaultConfig()).instances;
+
+    expect(building.sockets.map((s) => s.def.id)).toEqual(["left", "right"]);
+    for (const socket of building.sockets) {
+      expect(socket.partId).toBe("socket-railing-4x4");
+      expect(socket.part?.label).toBe("Railing Slats");
+      expect(socket.materials.length).toBeGreaterThan(0);
+    }
+  });
+
+  it("swaps one socket without touching the other", () => {
+    __resetUidCounter();
+    const config = createDefaultConfig();
+    config.instances = [
+      { ...config.instances[0], sockets: { left: "socket-staircase-4x4", right: "socket-railing-4x4" } },
+    ];
+
+    const [building] = resolveScene(config).instances;
+    const left = building.sockets.find((s) => s.def.id === "left");
+    const right = building.sockets.find((s) => s.def.id === "right");
+
+    expect(left?.part?.label).toBe("Staircase");
+    expect(right?.part?.label).toBe("Railing Slats");
+  });
 });
 
 describe("nextInstancePosition", () => {

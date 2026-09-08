@@ -18,6 +18,12 @@ export function ConfiguratorCanvas() {
 
   useEffect(() => disposeMaterialCache, []);
 
+  useEffect(() => {
+    if (process.env.NODE_ENV === "production") return;
+    (window as unknown as { __configurator: typeof useConfigurator }).__configurator =
+      useConfigurator;
+  }, []);
+
   return (
     <CanvasErrorBoundary>
       <Canvas
