@@ -9,6 +9,8 @@ import {
   SOCKET_GIZMO_COLOR,
   SOCKET_GIZMO_COLOR_ACTIVE,
   SOCKET_GIZMO_HOVER_SCALE,
+  SOCKET_GIZMO_OFFSET_OUT,
+  SOCKET_GIZMO_OFFSET_UP,
   SOCKET_GIZMO_RADIUS,
 } from "../../constants";
 import type { SocketAnchor } from "../readSocketAnchors";
@@ -43,37 +45,49 @@ export function SocketGizmo({ uid, socket, anchor }: SocketGizmoProps) {
     [editSocket, active, uid, socket.def.id],
   );
 
+  const gizmoPos: [number, number, number] = [
+    0,
+    SOCKET_GIZMO_OFFSET_UP,
+    SOCKET_GIZMO_OFFSET_OUT,
+  ];
+
   return (
     <group position={anchor.position} quaternion={anchor.quaternion}>
-      <mesh
-        onClick={onClick}
-        onPointerOver={(e) => {
-          e.stopPropagation();
-          setHovered(true);
-        }}
-        onPointerOut={() => setHovered(false)}
-        scale={hovered ? SOCKET_GIZMO_HOVER_SCALE : 1}
-      >
-        <sphereGeometry args={[SOCKET_GIZMO_RADIUS, 20, 20]} />
-        <meshStandardMaterial
-          color={active ? SOCKET_GIZMO_COLOR_ACTIVE : SOCKET_GIZMO_COLOR}
-          emissive={active ? SOCKET_GIZMO_COLOR_ACTIVE : SOCKET_GIZMO_COLOR}
-          emissiveIntensity={0.4}
-          roughness={0.4}
-        />
-      </mesh>
-
-      {active && (
-        <Html center distanceFactor={8} position={[0, SOCKET_GIZMO_RADIUS * 3, 0]}>
-          <SocketPicker
-            title={socket.def.id}
-            options={options}
-            activeId={socket.partId}
-            onPick={(partId) => setSocketPart(uid, socket.def.id, partId)}
-            onClose={() => editSocket(null)}
+      <group position={gizmoPos}>
+        <mesh
+          onClick={onClick}
+          onPointerOver={(e) => {
+            e.stopPropagation();
+            setHovered(true);
+          }}
+          onPointerOut={() => setHovered(false)}
+          scale={hovered ? SOCKET_GIZMO_HOVER_SCALE : 1}
+        >
+          <sphereGeometry args={[SOCKET_GIZMO_RADIUS, 20, 20]} />
+          <meshStandardMaterial
+            color={active ? SOCKET_GIZMO_COLOR_ACTIVE : SOCKET_GIZMO_COLOR}
+            emissive={active ? SOCKET_GIZMO_COLOR_ACTIVE : SOCKET_GIZMO_COLOR}
+            emissiveIntensity={0.4}
+            roughness={0.4}
           />
-        </Html>
-      )}
+        </mesh>
+
+        {active && (
+          <Html
+            center
+            distanceFactor={8}
+            position={[0, SOCKET_GIZMO_RADIUS * 3, 0]}
+          >
+            <SocketPicker
+              title={socket.def.id}
+              options={options}
+              activeId={socket.partId}
+              onPick={(partId) => setSocketPart(uid, socket.def.id, partId)}
+              onClose={() => editSocket(null)}
+            />
+          </Html>
+        )}
+      </group>
     </group>
   );
 }
