@@ -9,8 +9,3 @@ export type { DerivedTransform } from "./types";
 export type { CatalogPart } from "./types";
 export type { PartInstance } from "./types";
 export type { PlaygroundConfig } from "./types";
-export { DEFAULT_SCHEME } from "./defaults";
-export { nextUid } from "./defaults";
-export { __resetUidCounter } from "./defaults";
-export { makeInstance } from "./defaults";
-export { createDefaultConfig } from "./defaults";

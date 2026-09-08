@@ -1,4 +1,4 @@
-import type { CatalogPart } from "../model/types";
+import type { CatalogPart } from "../../model/types";
 
 export const BUILDING_PART_ID = "building";
 

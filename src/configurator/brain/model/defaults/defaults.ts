@@ -1,5 +1,5 @@
-import type { ColorScheme, PlaygroundConfig, PartInstance, Vec3 } from "./types";
-import { BUILDING_PART_ID } from "../catalog/building";
+import type { ColorScheme, PlaygroundConfig, PartInstance, Vec3 } from "../types";
+import { BUILDING_PART_ID } from "../../catalog/building";
 
 let counter = 0;
 

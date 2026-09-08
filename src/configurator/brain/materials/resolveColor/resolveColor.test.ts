@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { CatalogPart, ColorScheme, MaterialSlot } from "../model/types";
+import type { CatalogPart, ColorScheme, MaterialSlot } from "../../model/types";
 import {
   ACCENT_FALLBACK_GRAY,
   resolvePartMaterials,
@@ -54,6 +54,16 @@ describe("resolveSlotColor", () => {
   it("fixed slots use their hard-coded colour (Buoy Ball top)", () => {
     const slot: MaterialSlot = { name: "top", role: "fixed", fixedColor: "#1140ff" };
     expect(resolveSlotColor(slot, scheme)?.color).toBe("#1140ff");
+  });
+
+  it("tertiary slot takes scheme.tertiary when present, else falls back to accent", () => {
+    const slot: MaterialSlot = { name: "poly", role: "tertiary" };
+    expect(resolveSlotColor(slot, scheme)?.color).toBe("#0000ff");
+    expect(resolveSlotColor(slot, scheme)?.source).toBe("tertiary-fallback");
+
+    const withTertiary: ColorScheme = { ...scheme, tertiary: "#777777" };
+    expect(resolveSlotColor(slot, withTertiary)?.color).toBe("#777777");
+    expect(resolveSlotColor(slot, withTertiary)?.source).toBe("tertiary");
   });
 
   it("an explicit override beats every rule", () => {

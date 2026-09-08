@@ -2,21 +2,24 @@
 
 import { useMemo } from "react";
 import {
+  selectCanRedo,
+  selectCanUndo,
   selectDefaultScheme,
   selectSelectedInstanceScheme,
   useConfigurator,
+  useResolvedScene,
 } from "@store";
 import { BUILDING_PART_ID } from "@brain";
 import { Button } from "@shared";
 import { SchemePicker } from "@molecules";
 
-let dropX = 5;
-
 export function ConfiguratorPanel() {
   const defaultScheme = useConfigurator(selectDefaultScheme);
   const instanceScheme = useConfigurator(selectSelectedInstanceScheme);
-  const instances = useConfigurator((s) => s.scene.instances);
   const selectedUid = useConfigurator((s) => s.selectedUid);
+  const canUndo = useConfigurator(selectCanUndo);
+  const canRedo = useConfigurator(selectCanRedo);
+  const { instances } = useResolvedScene();
 
   const scheme = useMemo(
     () => ({ ...defaultScheme, ...instanceScheme }),
@@ -37,6 +40,8 @@ export function ConfiguratorPanel() {
   const addPart = useConfigurator((s) => s.addPart);
   const removeInstance = useConfigurator((s) => s.removeInstance);
   const select = useConfigurator((s) => s.select);
+  const undo = useConfigurator((s) => s.undo);
+  const redo = useConfigurator((s) => s.redo);
   const reset = useConfigurator((s) => s.reset);
 
   const count = instances.length;
@@ -59,9 +64,7 @@ export function ConfiguratorPanel() {
               : "Default — select a Building to recolour just that one"}
           </p>
         </div>
-        <div className="flex flex-col gap-2">
-          <SchemePicker scheme={scheme} onChange={setScheme} />
-        </div>
+        <SchemePicker scheme={scheme} onChange={setScheme} />
       </section>
 
       <section className="flex flex-col gap-4">
@@ -92,12 +95,7 @@ export function ConfiguratorPanel() {
             </ul>
           )}
 
-          <Button
-            onClick={() => {
-              addPart(BUILDING_PART_ID, [dropX, 0, 0], seedScheme);
-              dropX = -dropX + (dropX > 0 ? -3 : 3);
-            }}
-          >
+          <Button onClick={() => addPart(BUILDING_PART_ID, seedScheme)}>
             Add Building
           </Button>
           <Button
@@ -110,7 +108,25 @@ export function ConfiguratorPanel() {
         </div>
       </section>
 
-      <div className="mt-auto">
+      <div className="mt-auto flex flex-col gap-2">
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            className="flex-1"
+            disabled={!canUndo}
+            onClick={undo}
+          >
+            Undo
+          </Button>
+          <Button
+            variant="outline"
+            className="flex-1"
+            disabled={!canRedo}
+            onClick={redo}
+          >
+            Redo
+          </Button>
+        </div>
         <Button variant="ghost" className="w-full" onClick={reset}>
           Reset scene
         </Button>

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { createDefaultConfig, makeInstance, __resetUidCounter } from "../model/defaults";
-import { resolveScene } from "./resolveScene";
+import { createDefaultConfig, makeInstance, __resetUidCounter } from "../../model/defaults";
+import { resolveScene, nextInstancePosition } from "./resolveScene";
 
 describe("resolveScene", () => {
   it("resolves the default scene to a single Building at the origin", () => {
@@ -52,5 +52,47 @@ describe("resolveScene", () => {
     expect(ra.materials.find((m) => m.slot === "Board")?.color).toBe("#0000ff");
     expect(rb.materials.find((m) => m.slot === "Board")?.color).toBe("#ff0000");
     expect(rb.materials.find((m) => m.slot === "Frame")?.color).toBe("#ffffff");
+  });
+
+  it("returns a stable RenderableInstance reference when inputs are unchanged", () => {
+    __resetUidCounter();
+    const config = createDefaultConfig();
+    const first = resolveScene(config).instances[0];
+    const second = resolveScene(config).instances[0];
+    expect(second).toBe(first);
+  });
+
+  it("re-resolves an instance when its scheme changes", () => {
+    __resetUidCounter();
+    const config = createDefaultConfig();
+    const before = resolveScene(config).instances[0];
+
+    config.instances = [{ ...config.instances[0], scheme: { accent: "#123456" } }];
+    const after = resolveScene(config).instances[0];
+
+    expect(after).not.toBe(before);
+    expect(after.materials.find((m) => m.slot === "Board")?.color).toBe("#123456");
+  });
+});
+
+describe("nextInstancePosition", () => {
+  it("alternates sides at increasing distance", () => {
+    const config = createDefaultConfig();
+
+    config.instances = [];
+    expect(nextInstancePosition(config, 5)).toEqual([0, 0, 0]);
+
+    config.instances = [makeInstance("building")];
+    expect(nextInstancePosition(config, 5)).toEqual([-5, 0, 0]);
+
+    config.instances = [makeInstance("building"), makeInstance("building")];
+    expect(nextInstancePosition(config, 5)).toEqual([5, 0, 0]);
+
+    config.instances = [
+      makeInstance("building"),
+      makeInstance("building"),
+      makeInstance("building"),
+    ];
+    expect(nextInstancePosition(config, 5)).toEqual([-10, 0, 0]);
   });
 });

@@ -1,36 +1,45 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Swing Kingdom 3D Configurator
 
-## Getting Started
+New web configurator for Swing Kingdom playground sets. Replaces the legacy
+`swingkingdom.com/design-center/`.
 
-First, run the development server:
+**Stack:** Next.js 16 (App Router, React Compiler, Turbopack) · React 19 ·
+React-Three-Fiber + three.js · Tailwind CSS v4 · Zustand · Vitest.
+
+## Getting started
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+pnpm install
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Command | What it does |
+| --- | --- |
+| `pnpm dev` | Dev server |
+| `pnpm build` | Production build (runs `tsc` type-check) |
+| `pnpm start` | Serve the production build |
+| `pnpm lint` | ESLint |
+| `pnpm type-check` | `tsc --noEmit` |
+| `pnpm test` | Vitest (unit) |
+| `pnpm test:watch` | Vitest watch mode |
 
-## Learn More
+## Architecture
 
-To learn more about Next.js, take a look at the following resources:
+See [ARCHITECTURE.md](./ARCHITECTURE.md) for the layer map, dependency rules,
+naming/export conventions, path aliases and the Building model spec.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Short version:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- `src/configurator/brain/` — pure configurator logic (no React, no three.js).
+- `src/configurator/eyes/` — the React-Three-Fiber rendering layer.
+- `src/store/` — Zustand bridge between `brain`, `eyes` and `ui`.
+- `src/ui/` — presentation only (atomic design + shadcn primitives).
 
-## Deploy on Vercel
+## 3D assets
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Optimised GLB models live under `public/models/`, one folder per part. The
+current test model is `public/models/buildings/Super59_5ft_Deck.glb`.

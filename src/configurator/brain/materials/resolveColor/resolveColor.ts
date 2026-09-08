@@ -1,4 +1,4 @@
-import type { CatalogPart, ColorScheme, MaterialSlot } from "../model/types";
+import type { CatalogPart, ColorScheme, MaterialSlot } from "../../model/types";
 
 export const ACCENT_FALLBACK_GRAY = "#8a8d91";
 
@@ -6,7 +6,15 @@ export interface ResolvedMaterial {
   slot: string;
   color: string;
   texture?: string;
-  source: "vinyl-main" | "accent" | "accent-fallback" | "own" | "fixed" | "override";
+  source:
+    | "vinyl-main"
+    | "accent"
+    | "accent-fallback"
+    | "tertiary"
+    | "tertiary-fallback"
+    | "own"
+    | "fixed"
+    | "override";
 }
 
 export interface ResolveOptions {
@@ -38,6 +46,16 @@ export function resolveSlotColor(
         color: hasVariant ? scheme.accent : ACCENT_FALLBACK_GRAY,
         texture: slot.texture,
         source: hasVariant ? "accent" : "accent-fallback",
+      };
+    }
+
+    case "tertiary": {
+      const color = scheme.tertiary ?? scheme.accent;
+      return {
+        slot: slot.name,
+        color: color ?? ACCENT_FALLBACK_GRAY,
+        texture: slot.texture,
+        source: scheme.tertiary ? "tertiary" : "tertiary-fallback",
       };
     }
 

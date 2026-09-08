@@ -23,31 +23,48 @@ src/
 ├── configurator/                 парасолька конфігуратора
 │   │
 │   ├── brain/                     МОЗОК. Чиста логіка. Без React, без three.js.
-│   │   ├── model/                    доменні типи + фабрики (PlaygroundConfig,
-│   │   │                             PartInstance, ColorScheme, DEFAULT_SCHEME,
-│   │   │                             createDefaultConfig, makeInstance)
-│   │   ├── catalog/                  «3D Models List» як дані. building.ts — головна
-│   │   │                             модель Super 59 + похідні варіанти висоти deck;
-│   │   │                             registry.ts — індекс і resolveRenderable()
-│   │   ├── materials/                логіка Colors/Materials (main → Vinyl,
-│   │   │                             accent → дошки/пікети, native → залишити
-│   │   │                             матеріал GLB, fixed, own)
-│   │   ├── scene/                    resolveScene(config) → плаский
+│   │   ├── model/
+│   │   │   ├── types/                доменні типи (PlaygroundConfig, PartInstance,
+│   │   │   │                         ColorScheme, CatalogPart, …)
+│   │   │   └── defaults/             DEFAULT_SCHEME, createDefaultConfig,
+│   │   │                             makeInstance, nextUid
+│   │   ├── catalog/
+│   │   │   ├── building/             головна модель Super 59 + похідні висоти deck
+│   │   │   └── registry/             індекс частин, resolveRenderable()
+│   │   ├── materials/resolveColor/   логіка Colors/Materials (main → Vinyl,
+│   │   │                             accent → дошки/пікети, tertiary → Coastal
+│   │   │                             Gray Poly, native → залишити матеріал GLB →
+│   │   │                             null, fixed, own)
+│   │   ├── scene/resolveScene/       resolveScene(config) → плаский
 │   │   │                             RenderableInstance[]: похідні згорнуті на базу
 │   │   │                             + scale, кольори вирішені, per-instance схема
-│   │   │                             змерджена над глобальною
-│   │   ├── serialization/            config ⇄ рядок для share-посилання
+│   │   │                             змерджена над глобальною. resolveInstance()
+│   │   │                             мемоізується по ключу входів (кеш чиститься
+│   │   │                             від мертвих). nextInstancePosition() —
+│   │   │                             автопозиція нового інстансу
+│   │   ├── serialization/config/     config ⇄ рядок для share-посилання; повна
+│   │   │                             валідація форми (Vec3, hex, unknown partId)
+│   │   ├── constants/                один index.ts: FT_TO_UNIT, INSTANCE_SPACING_UNITS…
 │   │   └── index.ts                  публічний бар'єр brain
 │   │
 │   ├── eyes/                      ОЧІ. Тільки React-Three-Fiber.
-│   │   ├── canvas/ConfiguratorCanvas/    <Canvas> R3F (монтується ssr:false)
-│   │   ├── scene/PlaygroundScene/        світло, сітка, камера; мапить інстанси
-│   │   │                                 стора на компоненти
-│   │   ├── building/Building/            головна модель. Вантажить GLB базової
-│   │   │                                 частини, deep-clone на схему кольорів,
-│   │   │                                 підміняє матеріали по імені, <primitive>
+│   │   ├── canvas/
+│   │   │   ├── ConfiguratorCanvas/       <Canvas> R3F (ssr:false), onPointerMissed
+│   │   │   │                             → deselect, dispose material cache on unmount
+│   │   │   └── CanvasErrorBoundary/      ловить крах R3F, дає retry
+│   │   ├── scene/
+│   │   │   ├── PlaygroundScene/          фон, туман, мапінг інстансів, OrbitControls
+│   │   │   ├── SceneLights/              ambient + directional (VSM shadows) + env
+│   │   │   └── SceneFloor/               <Grid> + shadow-catcher plane
+│   │   ├── building/
+│   │   │   ├── Building/                 головна модель — чистий JSX
+│   │   │   ├── usePreparedModel/         useGLTF → deep-clone + підміна матеріалів
+│   │   │   │   └── prepareModel/         paintClone, getModelBounds (bbox-кеш по URL)
+│   │   │   └── SelectionBox/             wireframe-габарит обраного
 │   │   ├── materials/getMaterial/        ResolvedMaterial → кешований
-│   │   │                                 THREE.MeshStandardMaterial
+│   │   │                                 THREE.MeshStandardMaterial (+ dispose);
+│   │   │                                 polygonOffset для main/accent проти z-fight
+│   │   ├── constants/                    один index.ts: камера, туман, сітка, тіні
 │   │   └── index.ts
 │   │
 │   └── index.ts                   публічна поверхня конфігуратора
@@ -57,15 +74,18 @@ src/
 │   │   ├── atomic/
 │   │   │   ├── atoms/ColorSwatch/
 │   │   │   ├── molecules/SchemePicker/
-│   │   │   ├── organisms/ConfiguratorPanel/    сайдбар редагування
+│   │   │   ├── organisms/ConfiguratorPanel/    сайдбар: схема, список білдінгів,
+│   │   │   │                                   undo/redo, reset
 │   │   │   └── templates/ConfiguratorTemplate/ layout: панель + viewport
 │   │   └── shared/Button/                      shadcn-примітиви (Radix)
 │   └── styles/globals.css
 │
-├── store/useConfigurator/        Zustand-міст. Тримає PlaygroundConfig,
-│                                 перераховує scene при кожній зміні, тримає
-│                                 selectedUid. Селектори повертають примітиви /
-│                                 стабільні посилання (не свіжий об'єкт).
+├── store/
+│   ├── useConfigurator/          Zustand-стор. Джерело правди — config.
+│   │                             Історія (past/future, undo/redo). Селектори
+│   │                             повертають примітиви / стабільні посилання.
+│   └── useResolvedScene/         хук: useMemo(resolveScene(config)) — ліниве
+│                                 деривування, не жадібне в set()
 │
 ├── hooks/                        app-рівень (URL-sync, шорткати, персист)
 ├── lib/cn/                       framework-agnostic утиліти (cn)
@@ -90,19 +110,34 @@ eyes/  ─▶ store/ ─▶ configurator/brain/
 
 ## Конвенції
 
-### Експорти
+### Структура тек
 
-- Кожна функція, кожен компонент — **окремий іменований експорт**, по одному на
-  рядок. Без `export *`, без масових ре-експортів.
-- Кожна тека компонента / модуля має власний `index.ts`, який реекспортує лише
-  публічну поверхню.
-- Компонент = тека `PascalCase/` з файлом `PascalCase.tsx` + `index.ts`
-  (`Building/Building.tsx`, `ConfiguratorPanel/ConfiguratorPanel.tsx`).
+- **Одиниця = тека.** Кожен файл коду (`.ts` / `.tsx`, крім `index.ts`, `*.test.*`,
+  `*.d.ts`) лежить у теці з тим самим іменем: `Building/Building.tsx`,
+  `resolveScene/resolveScene.ts`, `getMaterial/getMaterial.ts`. Тест — поряд з
+  файлом у тій самій теці.
+- **Компоненти й провайдери** — `PascalCase/`. **Хуки** — `useCamelCase/`.
+  **Функції / модулі** — `camelCase/`.
+- **Тека-контейнер** (`catalog/`, `materials/`, `scene/`, `model/`, …) групує
+  одиниці й має свій `index.ts`, що збирає їхню публічну поверхню.
+- **`constants/`** — виняток: один файл `index.ts` з усіма константами, без підтек.
+
+### Експорти (barrel `index.ts`)
+
+- Кожен реекспорт — **окремий рядок** `export { X } from "./X"`. Без `export *`,
+  без багаторядкових `export { … }` блоків.
+- `index.ts` реекспортує лише публічну поверхню теки.
+- Звичайні `import { a, b } from "three"` у коді компонентів — норма, це не barrel.
 
 ### Коментарі
 
 Коментарів у коді немає. Іменування і структура мають пояснювати намір.
 Виняток — директиви лінтера (`eslint-disable-next-line`).
+
+### `"use client"`
+
+Тільки на React-компонентах (`*.tsx`) і хуках (`useX.ts`). Чисті функції
+(`getMaterial`, `prepareModel`, `resolveScene`) — без директиви.
 
 ### Path-аліаси (`tsconfig.json` + `vitest.config.mts`)
 
@@ -125,8 +160,9 @@ eyes/  ─▶ store/ ─▶ configurator/brain/
 
 ## Головна модель (тестове відображення)
 
-`BUILDING_PART` у `configurator/brain/catalog/building.ts` — вежа **Super 59** з
-5-футовим deck (`public/models/buildings/Super59_5ft_Deck.glb`). На сцену можна
+`BUILDING_PART` у `configurator/brain/catalog/building/building.ts` — вежа
+**Super 59** з 5-футовим deck (`public/models/buildings/Super59_5ft_Deck.glb`).
+На сцену можна
 поставити кілька; клік по моделі або по пункту списку в панелі — вибір.
 
 **Слоти матеріалів GLB:**
@@ -146,7 +182,11 @@ eyes/  ─▶ store/ ─▶ configurator/brain/
 **Per-instance кольори:** `PartInstance.scheme` перекриває глобальний
 `config.scheme` поключово. Панель редагує схему **обраного** інстансу; коли нічого
 не обрано — рухає глобальний default, за яким слідують усі інстанси без власної
-схеми.
+схеми. Новий білдінг успадковує ту схему, що зараз показана в панелі.
+
+**Історія:** стор тримає `past` / `future` (ліміт 50). Кожна мутація config
+пушить попередній стан у `past` і чистить `future`. `undo` / `redo` знімають
+вибір.
 
 ---
 
@@ -157,7 +197,9 @@ eyes/  ─▶ store/ ─▶ configurator/brain/
 2. Snap/socket-система в `brain/scene` для частин, що кріпляться до Building
    (слайди, місточки, доступ).
 3. `hooks/useUrlConfigSync` — персист конфігу в URL через `brain/serialization`.
-4. Commercial-правила (`config.line` наразі inert): вищі перила при deck > 3ft,
+4. Окремий слайс `useSelection` (вибір + hover + camera-focus), відділити від
+   `useConfigurator`.
+5. Commercial-правила (`config.line` наразі inert): вищі перила при deck > 3ft,
    зазор deck → дах, standalone-only swing frames, авто Safety Signs / Ground
    Anchors. Повернути перемикач Product Line у панель, коли перше правило
    почне споживати значення.

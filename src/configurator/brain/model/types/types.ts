@@ -24,7 +24,13 @@ export interface ColorScheme {
   tertiary?: string;
 }
 
-export type ColorRole = "vinyl" | "accent" | "native" | "own" | "fixed";
+export type ColorRole =
+  | "vinyl"
+  | "accent"
+  | "tertiary"
+  | "native"
+  | "own"
+  | "fixed";
 
 export interface MaterialSlot {
   name: string;

@@ -1,5 +1,5 @@
-import type { CatalogPart, PartCategory } from "../model/types";
-import { BUILDING_PART, BUILDING_VARIANTS } from "./building";
+import type { CatalogPart, PartCategory } from "../../model/types";
+import { BUILDING_PART, BUILDING_VARIANTS } from "../building";
 
 const ALL_PARTS: CatalogPart[] = [BUILDING_PART, ...BUILDING_VARIANTS];
 
