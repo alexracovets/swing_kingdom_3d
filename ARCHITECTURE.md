@@ -217,10 +217,10 @@ eyes/  ─▶ store/ ─▶ configurator/brain/
 - **`CatalogPart.sockets[]`** — оголошення на базовій частині: `id`, `size`
   (`"4x4"`), `emptyNode` (ім'я empty-ноди в GLB, напр. `Plane_Left`).
 - **socket-parts** (`catalog/socketParts/`) — частини з `socketFit: "4x4"`, які
-  туди підходять. Тестовий набір: `Railing_Slats_4_4` (default), `5_Staircase`,
-  `12_Ramp_with_Rope` — усі в одному `Empty_4_4.glb`, обирається по `glbMesh`.
-- **`PartInstance.sockets`** — `Record<socketId, socketPartId>`. `makeInstance`
-  сідить default'и через `defaultSocketMap`.
+  туди підходять. Наразі порожньо: список приходить з **бекенду**, хардкоду в
+  проекті немає. Частина вибирається по `glb` + `glbMesh`.
+- **`PartInstance.sockets`** — `Record<socketId, socketPartId>`. Дефолтів на
+  клієнті немає (`DEFAULT_SOCKET_PART` порожній) — сокет стартує пустим.
 - **`resolveScene`** → `RenderableInstance.sockets: ResolvedSocket[]`
   (`def` + `part` + `materials`).
 - **`eyes/sockets`**: `readSocketAnchors` дістає transform empty-ноди з GLB;
@@ -240,7 +240,7 @@ eyes/  ─▶ store/ ─▶ configurator/brain/
    моделей; кожен пушить у `registry.ts`.
 2. Розширити сокети: більше розмірів, правила сумісності (який socketFit у який
    size), парні сокети (`Salmon Ladder` + `V-Climber` на NOC Climber).
-3. Матеріали для `Empty_4_4` мешів (зараз geometry-only → сірі).
+3. Підтягувати socket-parts з бекенду (`SOCKET_PARTS_4X4` зараз порожній).
 4. `hooks/useUrlConfigSync` — персист конфігу в URL через `brain/serialization`.
 5. Окремий слайс `useSelection` (вибір + hover + camera-focus + editingSocket),
    відділити від `useConfigurator`.

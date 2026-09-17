@@ -24,7 +24,6 @@ export { INSTANCE_SPACING_UNITS } from "./constants";
 export { BUILDING_PART_ID } from "./catalog";
 export { BUILDING_PART } from "./catalog";
 export { BUILDING_VARIANTS } from "./catalog";
-export { SOCKET_PART_RAILING_ID } from "./catalog";
 export { SOCKET_PARTS_4X4 } from "./catalog";
 export { DEFAULT_SOCKET_PART } from "./catalog";
 export { listParts } from "./catalog";

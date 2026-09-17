@@ -1,7 +1,6 @@
 export { BUILDING_PART_ID } from "./building";
 export { BUILDING_PART } from "./building";
 export { BUILDING_VARIANTS } from "./building";
-export { SOCKET_PART_RAILING_ID } from "./socketParts";
 export { SOCKET_PARTS_4X4 } from "./socketParts";
 export { DEFAULT_SOCKET_PART } from "./socketParts";
 export { listParts } from "./registry";

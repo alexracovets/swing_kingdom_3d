@@ -74,31 +74,27 @@ describe("resolveScene", () => {
     expect(after.materials.find((m) => m.slot === "Board")?.color).toBe("#123456");
   });
 
-  it("seeds the Building with its default socket parts and resolves them", () => {
+  it("exposes the Building sockets but leaves them empty by default", () => {
     __resetUidCounter();
     const [building] = resolveScene(createDefaultConfig()).instances;
 
     expect(building.sockets.map((s) => s.def.id)).toEqual(["left", "right"]);
     for (const socket of building.sockets) {
-      expect(socket.partId).toBe("socket-railing-4x4");
-      expect(socket.part?.label).toBe("Railing Slats");
-      expect(socket.materials.length).toBeGreaterThan(0);
+      expect(socket.partId).toBeNull();
+      expect(socket.part).toBeNull();
+      expect(socket.materials).toEqual([]);
     }
   });
 
-  it("swaps one socket without touching the other", () => {
+  it("resolves a socket to nothing when its part is not in the catalog", () => {
     __resetUidCounter();
     const config = createDefaultConfig();
-    config.instances = [
-      { ...config.instances[0], sockets: { left: "socket-staircase-4x4", right: "socket-railing-4x4" } },
-    ];
+    config.instances = [{ ...config.instances[0], sockets: { left: "not-in-catalog" } }];
 
     const [building] = resolveScene(config).instances;
     const left = building.sockets.find((s) => s.def.id === "left");
-    const right = building.sockets.find((s) => s.def.id === "right");
 
-    expect(left?.part?.label).toBe("Staircase");
-    expect(right?.part?.label).toBe("Railing Slats");
+    expect(left?.part).toBeNull();
   });
 });
 
