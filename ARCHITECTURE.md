@@ -31,8 +31,10 @@ src/
 │   │   ├── catalog/
 │   │   │   ├── building/             головна модель Super 59 + похідні висоти deck;
 │   │   │   │                         оголошує sockets[] (id + size + emptyNode GLB)
-│   │   │   ├── socketParts/          частини, що вставляються в сокет (socketFit),
-│   │   │   │                         + DEFAULT_SOCKET_PART по розміру
+│   │   │   ├── socketParts/          частини, що вставляються в сокет (socketFit) +
+│   │   │   │                         DEFAULT_SOCKET_PART по розміру. Порожні масиви —
+│   │   │   │                         реальний список приходить з бекенду/адмінки, тут
+│   │   │   │                         нічого не хардкодиться (див. §8 docx-стандарту)
 │   │   │   └── registry/             індекс, resolveRenderable(), partsForSocket()
 │   │   ├── materials/resolveColor/   логіка Colors/Materials (main → Vinyl,
 │   │   │                             accent → дошки/пікети, tertiary → Coastal
@@ -231,6 +233,28 @@ eyes/  ─▶ store/ ─▶ configurator/brain/
 - **DoubleSide**: `getMaterial` і `paintClone` виставляють `side: DoubleSide`
   всім матеріалам (тонкі GLB-поверхні: слати, деки, гірки).
 - Сокет-заміна проходить через `commit()` → в історію.
+
+### Стандарт для 3D-моделерів
+
+`3D_Configurator_Model_Architecture_UA.docx` (корінь репо) — специфікація для
+Blender-моделей, окрема від коду цього проекту, але саме під неї має бути
+переписаний GLB-парсинг сокетів. Ключові поняття, яких зараз **немає** в коді
+(`SocketDef`/`readSocketAnchors` — спрощена версія під наш GLB, не під
+стандарт):
+
+- `connector_papa` — корінь дочірньої моделі (рівно один), нею модель
+  стикується з `connector_mama`.
+- `slots` → `slot` → рівно один `connector_mama` — точка кріплення на
+  батьківській моделі.
+- `trigger` / `dangerous` — точка кульки-інтеракції, належить **дочірній
+  моделі**, не слоту; `dangerous` = слот не можна лишати порожнім.
+- **`slot.trigger`** — опційний, лежить у самому `slot` поруч із
+  `connector_mama`. Дефолтна позиція кульки, поки слот порожній і не
+  `dangerous`. Щойно модель встановлена — кулька йде на її власний
+  `trigger`/`dangerous`; `slot.trigger` знову бере на себе роль, якщо слот
+  спорожніє.
+- `available_models` — лише ілюстрація в Blender; реальний список моделей
+  слота, порядок, увімкненість і дефолт зберігаються в БД/адмінці, не в GLB.
 
 ---
 
